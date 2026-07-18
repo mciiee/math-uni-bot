@@ -28,7 +28,6 @@ func getToken() string {
 }
 
 func main() {
-
 	token := getToken()
 
   bot, err := tgbotapi.NewBotAPI(token)
@@ -47,13 +46,14 @@ func main() {
 	updates := bot.GetUpdatesChan(updateConf)
 
 	for update := range updates {
+
     if update.Message == nil {
       continue
 		}
     
 		log.Printf("[Message:%d] %s<%d>: \"%s\"\n", update.Message.Chat.ID, update.Message.From.UserName,  update.Message.From.ID, update.Message.Text)
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "\u2A01")
 		msg.ReplyToMessageID = update.Message.MessageID
 		bot.Send(msg)
 	}
