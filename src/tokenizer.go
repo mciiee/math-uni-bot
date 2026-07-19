@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+  "fmt"
+  "unicode"
+)
 
 // "fmt"
 // "unicode/utf8"
@@ -11,6 +14,8 @@ const (
   Unknown TokenType = iota
   
   Whitespace 
+  
+  Literal
 
   ParenOpen // (
   ParenClose // )
@@ -25,10 +30,13 @@ const (
   Asterisk // *
 
   Underscore // _
+
+  EOF
 )
 
 func (enum TokenType) String() string {
   switch enum {
+  case Literal: return "Literal"
     case Asterisk: return "Asterisk"
     case Backslash: return "Backslash"
     case Caret: return "Caret"
@@ -39,6 +47,7 @@ func (enum TokenType) String() string {
     case Underscore: return "Underscore"
     case Whitespace: return "Whitespace"
     case Unknown: return "Unknown"
+    case EOF: return "EOF"
   }
   panic(fmt.Sprintf("Failed to lookup an enum name, code: %d", enum))
 }
@@ -102,12 +111,25 @@ var underscoreToken = Token{
     Repr: []rune{'_'},
 }
 
+var eofToken = Token{
+  Type: EOF,
+  Repr: []rune{0},
+}
+
 func newUnknownToken(repr rune) Token {
   return Token{
     Type: Unknown,
+    Repr: []rune{-1},
+  }
+}
+
+func newLiteralToken(repr rune) Token {
+  return Token{
+    Type: Literal,
     Repr: []rune{repr},
   }
 }
+
 func Tokenize(str string) []Token {
   tokens := []Token{}
   for _, runeVal := range str {
@@ -137,8 +159,12 @@ func Tokenize(str string) []Token {
       case '_':
         tokens = append(tokens, underscoreToken)
       default:
+        if unicode.IsGraphic(runeVal) {
+          tokens = append(tokens, newLiteralToken(runeVal))
+        }
         tokens = append(tokens, newUnknownToken(runeVal))
     }
   }
+  tokens = append(tokens, eofToken)
   return tokens
 }
